@@ -16,6 +16,8 @@ function loadTodos() {
         <h3>${title}</h3>
         <p>${content}</p>
         <span>Statut : ${isDone ? "Terminé" : "À faire"}</span>
+        <button type="button" id="${id}" class="edit">Modifier</button>
+        <button type="button" id="${id}" class="delete">Supprimer</button>
       </div>
     `;
 
@@ -25,8 +27,10 @@ function loadTodos() {
 }
 
 $(function () {
+  // Get all todos
   loadTodos();
 
+  //   Create todo
   $("#create_todo").on("click", function (e) {
     let title = $("#title").val();
     let content = $("#content").val();
@@ -40,9 +44,32 @@ $(function () {
           title: title,
           content: content,
         }),
+        success: function () {
+          $("#create_todo_form")[0].reset();
+          loadTodos();
+        },
+        error: function (xhr, status, error) {
+          alert("Erreur lors de la création :", error);
+        },
       });
-      $("#create_todo_form")[0].reset();
-      loadTodos();
+    }
+  });
+
+  //   Delete todo
+  $("#todos").on("click", ".delete", function () {
+    todo_id = $(this).attr("id");
+    if (todo_id) {
+      $.ajax({
+        method: "POST",
+        url: `/delete_todo/${todo_id}`,
+        success: function (response) {
+          console.log(response);
+          loadTodos();
+        },
+        error: function () {
+          alert("We have a situation on situation on deletion processing");
+        },
+      });
     }
   });
 });

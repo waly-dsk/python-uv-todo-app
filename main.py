@@ -35,5 +35,10 @@ def create_todo(todo: Todo):
     return {"last_inserted_id": last_inserted_id}
 
 
+@app.post("/delete_todo/{todo_id}")
+def delete_todo(todo_id: int):
+    feedback = db.delete_todo(todo_id)
+    return feedback
+
 # Serve static files
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")

@@ -54,3 +54,17 @@ def create_todo(title, content):
     finally:
         conn.close()
 
+
+def delete_todo(todo_id):
+    conn = sqlite3.connect("todo.db")
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "DELETE FROM todos WHERE id=?",
+            (todo_id,)
+        )
+        conn.commit()
+        return {"deleted_rows": cursor.rowcount}
+    finally:
+        conn.close()
+
