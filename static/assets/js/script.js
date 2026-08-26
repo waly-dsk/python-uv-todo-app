@@ -62,7 +62,7 @@ $(function () {
       $.ajax({
         method: "POST",
         url: `/delete_todo/${todo_id}`,
-        success: function (response) {
+        success: function () {
           loadTodos();
         },
         error: function () {
