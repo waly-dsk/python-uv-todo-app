@@ -63,7 +63,6 @@ $(function () {
         method: "POST",
         url: `/delete_todo/${todo_id}`,
         success: function (response) {
-          console.log(response);
           loadTodos();
         },
         error: function () {
