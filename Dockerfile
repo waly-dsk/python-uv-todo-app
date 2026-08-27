@@ -1,34 +1,36 @@
-FROM python:3.12-alpine AS builder
+# ---- Étape 1 : Builder ----
+# On installe les dépendances et on prépare l'application
+FROM python:3.12-slim AS builder
 
+# On récupère l'outil "uv" (gestionnaire de dépendances) depuis son image officielle
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 WORKDIR /app
 
+# On copie d'abord les fichiers de dépendances seulement
+# (permet à Docker de mettre en cache cette étape si le code change mais pas les dépendances)
 COPY pyproject.toml uv.lock ./
+RUN uv sync --no-dev --no-install-project
 
-RUN uv sync --no-install-project --no-dev
-
-COPY src/ ./src/
-COPY main.py ./
-COPY db.py ./
+# On copie maintenant le reste du code de l'application
+COPY main.py db.py ./
 COPY static/ ./static/
-COPY README.md ./
-COPY todo.db ./
-
-RUN uv sync --no-dev
 
 
-FROM python:3.12-alpine AS final
+# ---- Étape 2 : Image finale ----
+# Image plus légère, sans les outils de build
+FROM python:3.12-slim AS final
 
 WORKDIR /app
 
+# On récupère uniquement ce qui a été préparé dans l'étape précédente
 COPY --from=builder /app/.venv /app/.venv
-COPY --from=builder /app/src /app/src
 COPY --from=builder /app/main.py /app/main.py
 COPY --from=builder /app/db.py /app/db.py
 COPY --from=builder /app/static /app/static
-COPY --from=builder /app/todo.db /app/todo.db
 
+# Le port sur lequel l'application écoute
 EXPOSE 8000
 
-CMD ["/app/.venv/bin/python", "main.py"]
+# La commande qui démarre l'application
+CMD ["/app/.venv/bin/uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

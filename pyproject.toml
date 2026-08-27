@@ -2,20 +2,15 @@
 name = "todo"
 version = "0.1.0"
 description = "Add your description here"
-readme = "README.md"
 authors = [
     { name = "waly-dsk", email = "davowilfried3@gmail.com" }
 ]
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.141.1",
-    "httpx2>=2.10.0",
-    "pytest>=9.1.1",
+    "httpx>=0.28.0",
     "uvicorn>=0.52.3",
 ]
-
-[project.scripts]
-todo = "todo:main"
 
 [build-system]
 requires = ["uv_build>=0.12.2,<0.13.0"]
