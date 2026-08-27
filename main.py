@@ -1,16 +1,29 @@
-from fastapi import FastAPI
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI, HTTPException
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from pydantic import BaseModel
 
 import db
 
-app = FastAPI()
-
 
 class Todo(BaseModel):
     title: str
     content: str
+
+
+class TodoDone(BaseModel):
+    done: bool
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    db.init_db()
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.get("/healthz")
@@ -29,16 +42,33 @@ def get_todos():
     return {"todos": todos}
 
 
+@app.get("/get_todo/{todo_id}")
+def get_todo(todo_id: int):
+    result = db.get_todo(todo_id)
+    if result["todo"] is None:
+        raise HTTPException(status_code=404, detail="Todo introuvable")
+    return result
+
+
 @app.post("/create_todo")
 def create_todo(todo: Todo):
-    last_inserted_id = db.create_todo(todo.title, todo.content)
-    return {"last_inserted_id": last_inserted_id}
+    return db.create_todo(todo.title, todo.content)
+
+
+@app.post("/update_todo/{todo_id}")
+def update_todo(todo_id: int, todo: Todo):
+    return db.update_todo(todo_id, todo.title, todo.content)
+
+
+@app.post("/toggle_todo/{todo_id}")
+def toggle_todo(todo_id: int, payload: TodoDone):
+    return db.set_todo_done(todo_id, payload.done)
 
 
 @app.post("/delete_todo/{todo_id}")
 def delete_todo(todo_id: int):
-    feedback = db.delete_todo(todo_id)
-    return feedback
+    return db.delete_todo(todo_id)
+
 
 # Serve static files
 app.mount("/static", StaticFiles(directory="static", html=True), name="static")

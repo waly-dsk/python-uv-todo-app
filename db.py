@@ -8,7 +8,8 @@ def init_db():
             CREATE TABLE IF NOT EXISTS todos (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 title TEXT NOT NULL,
-                content TEXT
+                content TEXT,
+                done INTEGER NOT NULL DEFAULT 0
             )
         """)
         conn.commit()
@@ -55,16 +56,39 @@ def create_todo(title, content):
         conn.close()
 
 
-def delete_todo(todo_id):
+def update_todo(todo_id, title, content):
     conn = sqlite3.connect("todo.db")
     try:
         cursor = conn.cursor()
         cursor.execute(
-            "DELETE FROM todos WHERE id=?",
-            (todo_id,)
+            "UPDATE todos SET title=?, content=? WHERE id=?",
+            (title, content, todo_id),
         )
+        conn.commit()
+        return {"updated_rows": cursor.rowcount}
+    finally:
+        conn.close()
+
+
+def set_todo_done(todo_id, done):
+    conn = sqlite3.connect("todo.db")
+    try:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE todos SET done=? WHERE id=?", (1 if done else 0, todo_id)
+        )
+        conn.commit()
+        return {"updated_rows": cursor.rowcount}
+    finally:
+        conn.close()
+
+
+def delete_todo(todo_id):
+    conn = sqlite3.connect("todo.db")
+    try:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM todos WHERE id=?", (todo_id,))
         conn.commit()
         return {"deleted_rows": cursor.rowcount}
     finally:
         conn.close()
-
