@@ -1,8 +1,9 @@
 from uuid import UUID
 
-from db import get_connection
 from fastapi import FastAPI
 from pydantic import BaseModel
+
+from db import get_connection
 
 app = FastAPI()
 
