@@ -8,6 +8,19 @@ jobs:
   lint-and-test:
     runs-on: ubuntu-26.04
 
+    services:
+      postgres:
+       image: postgres:16
+       env:
+        POSTGRES_USER: todo_user
+        POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        POSTGRES_DB: todo_test
+       ports:
+        - 5432:5432
+
+    env:
+      DATABASE_URL: postgresql://todo_user:${{ secrets.POSTGRES_PASSWORD }}@localhost:5432/todo_test
+
     defaults:
       run:
         working-directory: backend
