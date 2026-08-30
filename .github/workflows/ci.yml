@@ -43,5 +43,8 @@ jobs:
       - name: Check linting
         run: uv run ruff check .
 
+      - name: Initialize test database
+        run: psql "$DATABASE_URL" -f ../sql/init.sql
+
       - name: Run unit tests
         run: uv run pytest
